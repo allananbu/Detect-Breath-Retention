@@ -17,18 +17,32 @@ k=1;
 l=1;
 m=1;
 n=1;
+z=1;
+s=1;
 temp=zeros(1,5);
 PEAK_FLAG=0;
 VALLEY_FLAG=0;
+HOLD_FLAG=0;
+RET_FLAG=0;
 C={};
 %find slope
 for i=2:length(x)
     con=(x(i)-x(i-1));
     d(i)=sign(con);
+    RET_FLAG(i)=0;
     if length(d)>=length(temp)
         temp(5)=0;
         temp=circshift(temp,1);
         temp(1)=d(i);
+        if HOLD_FLAG==1 & length(hold)>=1 & length(idx)>=1
+            if (i-1)>hold(end) 
+                hold(idx(end)-3:idx(end))=0;
+                hold=hold(hold~=0);
+                HOLD_FLAG=0;
+                l=l-4;
+            end
+        end
+
         if sum(temp)<=3 & sum(temp)>=-3 & not(ismember(0,any(temp,1)))
             if x(i)>(mean(x(1:i)))
                 %if ismember(i-4,hold)
@@ -40,15 +54,27 @@ for i=2:length(x)
 %                         final_hold(l)=i;
 %                     end
 %                 end
+                HOLD_FLAG=1;
+                RET_FLAG(i)=1;
                 new=diff(hold);
                 tf=new>5;
                 idx=find(tf);
                 x1=size(idx);
-                if new(idx
-                if length(idx)==1
+                l=l+1;
+                
+%                 if length(idx)>=1
 %                     hold(idx-3:idx)=0;
-%                     hold(hold==0)=[];
-                else
+%                     idx=idx-3;
+%                 end
+%                 if length(idx)==1
+%                     if new(idx)>5
+%                       hold(idx-3:idx)=0;
+%                       hold(hold==0)=[];
+%                       idx=idx-3;
+%                     else
+%                         break
+%                     end
+                
 %                     hold(idx+1:idx+4)=0;
 %                     hold(hold==0)=[];
 
@@ -66,14 +92,34 @@ for i=2:length(x)
 %                     idx=idx-4;
 %                     hold(idx(length(idx))-3:idx(length(idx)))=[];
 %                     end
-%                     
+%                 hold(hold==0)=[];    
                 end
-                l=l+1;
+
 %                 idx=idx-4;
-            end
-            
+        end
+        
+    
+        
+
+    end
+%     if  length(hold)>4
+%         val=find(hold==i);
+%         if val(2)==0
+%             idy=i;
+%             z=z+1;
+%         else
+%             z=1;
+%         end
+%         
+%     end
+    if length(RET_FLAG)>=4
+        if RET_FLAG(i)==1 & RET_FLAG(i-4)==1
+            hold_ind=i;
+            new_hold(s)=i;
+            s=s+1;
         end
     end
+   
 
     if d(i)~=d(i-1)
         if d(i)==-1
@@ -121,7 +167,7 @@ end
 figure(2)
 plot(t,x)
 hold on
-plot(t(hold),x(hold),'*')
+plot(t(new_hold),x(new_hold),'*')
 plot(t(peak),x(peak),'x')
 plot(t(valley),x(valley),'o')
 
